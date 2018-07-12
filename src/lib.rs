@@ -1,5 +1,3 @@
-#[no_mangle]
-
 pub fn compare(string1: &str, string2: &str) {
     if string1 == string2 {
         println!("The strings are the same.");
@@ -7,12 +5,12 @@ pub fn compare(string1: &str, string2: &str) {
     } 
 
     if string1.len() < string2.len() {
-        check_ends(string1, string2);
+        let (position, insertion) = check_ends(string1, string2);
         return
     }
 
     if string1.len() > string2.len() {
-        check_ends(string2, string1);
+        let (position, deletion) = check_ends(string2, string1);
         return
     }
 
@@ -20,24 +18,28 @@ pub fn compare(string1: &str, string2: &str) {
 
     let (suffix1, suffix2) = remove_suffix(prefix1.to_string(), prefix2.to_string());
 
+    //check insertion or deletion
+
     let common_middle = find_common_middle(suffix1.to_string(), suffix2.to_string());
 
     println!("Common middle is {}", common_middle);
 }
 
-fn check_ends(shorter: &str, longer: &str) {
+fn check_ends(shorter: &str, longer: &str) -> (usize, String) {
     let len = shorter.len();
     let start = longer.len() - len;
 
-    if shorter == &longer[0..len] {
+    if shorter == &longer[..len] {
         println!("Something got added/deleted at the end!");
-        return
+        return (len, longer[len..].to_string())
     }
 
     if shorter == &longer[start..] {
         println!("Something got added/deleted at the start!");
-        return
+        return (0, longer[..start].to_string())
     }
+
+    return (0, String::new())
 }
 
 fn remove_prefix(string1: String, string2: String) -> (String, String) {
