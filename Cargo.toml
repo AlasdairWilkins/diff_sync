@@ -1,0 +1,6 @@
+[package]
+name = "diff_sync"
+version = "0.1.0"
+authors = ["AlasdairWilkins <alasdair.wilkins@gmail.com>"]
+
+[dependencies]
