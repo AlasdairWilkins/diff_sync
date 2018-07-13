@@ -12,21 +12,21 @@ pub fn compare(string1: &str, string2: &str) -> HashMap<usize, HashMap<String, S
 
     let (no_pre_suf1, no_pre_suf2) = remove_suffix(no_pre1.to_string(), no_pre2.to_string());
 
+    let pre_len1 = string1.len() - no_pre1.len();
+
     if no_pre_suf1.len() == 0 {
         let mut diff = HashMap::new();
         diff.insert(String::new(), no_pre_suf2);
-        updates.insert(no_pre1.len(), diff);
+        updates.insert(pre_len1, diff);
         return updates
     }
 
     if no_pre_suf2.len() == 0 {
         let mut diff = HashMap::new();
         diff.insert(no_pre_suf1, String::new());
-        updates.insert(no_pre2.len(), diff);
+        updates.insert(pre_len1, diff);
         return updates
     }
-
-    let pre_len1 = string1.len() - no_pre1.len();
 
     return find_diffs(no_pre_suf1.to_string(), no_pre_suf2.to_string(), pre_len1);
 
@@ -34,11 +34,9 @@ pub fn compare(string1: &str, string2: &str) -> HashMap<usize, HashMap<String, S
 
 fn find_diffs(string1: String, string2: String, pre_len1: usize) -> HashMap<usize, HashMap<String, String>> {
     let common_middle = find_common_middle(string1.to_string(), string2.to_string());
-    println!("Common middle for {} and {} is: {}", string1, string2, common_middle);
     if common_middle != "" {
         let mid_start1 = string1.find(&common_middle).unwrap();
         let mid_start2 = string2.find(&common_middle).unwrap();
-        println!("Looking for diffs at {} and {}", string1[..mid_start1].to_string(), string2[..mid_start2].to_string());
         let update1 = find_diffs(string1[..mid_start1].to_string(), string2[..mid_start2].to_string(), pre_len1);
         let mid_end1 = mid_start1 + common_middle.len();
         let mid_end2 = mid_start2 + common_middle.len();
@@ -124,12 +122,34 @@ fn find_common_end(string1: String, string2: String) -> String {
     return String::new()
 }
 
-// pub fn update(original: String, updates: HashMap<usize, String>, position: usize) -> String {
+pub fn update(original: String, updates: &HashMap<usize, HashMap<String, String>>, position: usize) -> String {
+    if original.len() > 0 {
+        if updates.contains_key(&position) {
+            let diff = updates.get(&position).unwrap();
+            let key = find_key(diff, &original, 1);
+            if key == "" {
+                return format!("{}{}", diff.get(&key).unwrap(), update(original[key.len()..].to_string(), updates, position + 1))
+            }
+            return format!("{}{}", diff.get(&key).unwrap(), update(original[key.len()..].to_string(), updates, position + key.len()))
+        }
+        return format!("{}{}", original[..1].to_string(), update(original[1..].to_string(), updates, position + 1))
+    }
+    if original.len() == 0 {
+        if updates.contains_key(&position) {
+            let diff = updates.get(&position).unwrap();
+            let key = find_key(diff, &original, 1);
+            return diff.get(&key).unwrap().to_string()
+        }
+    }
+    return String::new()
+}
 
-//     if updates.contains_key(position) {
-//         let change = updates.get(position).unwrap()
-//         let change_len = change.len()
-//         return format!("{}{}",
-//             change, update(original)
-//     }
-// }
+fn find_key (diff: &HashMap<String, String>, original: &String, length: usize) -> String {
+    if diff.contains_key("") {
+        return String::new()
+    }
+    if !diff.contains_key(&original[..length]) {
+        return find_key(diff, original, length + 1);
+    }
+    return original[..length].to_string()
+}
