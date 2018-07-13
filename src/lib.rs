@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-pub fn compare(string1: &str, string2: &str) -> HashMap<usize, String> {
+pub fn compare(string1: &str, string2: &str) -> HashMap<usize, HashMap<String, String>> {
 
     let mut updates = HashMap::new();
 
@@ -13,12 +13,16 @@ pub fn compare(string1: &str, string2: &str) -> HashMap<usize, String> {
     let (no_pre_suf1, no_pre_suf2) = remove_suffix(no_pre1.to_string(), no_pre2.to_string());
 
     if no_pre_suf1.len() == 0 {
-        updates.insert(no_pre1.len(), no_pre_suf2);
+        let mut diff = HashMap::new();
+        diff.insert(String::new(), no_pre_suf2);
+        updates.insert(no_pre1.len(), diff);
         return updates
     }
 
     if no_pre_suf2.len() == 0 {
-        updates.insert(no_pre2.len(), no_pre_suf1);
+        let mut diff = HashMap::new();
+        diff.insert(no_pre_suf1, String::new());
+        updates.insert(no_pre2.len(), diff);
         return updates
     }
 
@@ -28,18 +32,24 @@ pub fn compare(string1: &str, string2: &str) -> HashMap<usize, String> {
 
 }
 
-fn find_diffs(string1: String, string2: String, pre_len1: usize) -> HashMap<usize, String> {
+fn find_diffs(string1: String, string2: String, pre_len1: usize) -> HashMap<usize, HashMap<String, String>> {
     let common_middle = find_common_middle(string1.to_string(), string2.to_string());
+    println!("Common middle for {} and {} is: {}", string1, string2, common_middle);
     if common_middle != "" {
-        let common_mid_start = string1.find(&common_middle).unwrap();
-        let update1 = find_diffs(string1[..common_mid_start].to_string(), string2[..common_mid_start].to_string(), pre_len1);
-        let common_mid_end = common_mid_start + common_middle.len();
-        let update2 = find_diffs(string1[common_mid_end..].to_string(), string2[common_mid_end..].to_string(), pre_len1 + common_mid_end);
+        let mid_start1 = string1.find(&common_middle).unwrap();
+        let mid_start2 = string2.find(&common_middle).unwrap();
+        println!("Looking for diffs at {} and {}", string1[..mid_start1].to_string(), string2[..mid_start2].to_string());
+        let update1 = find_diffs(string1[..mid_start1].to_string(), string2[..mid_start2].to_string(), pre_len1);
+        let mid_end1 = mid_start1 + common_middle.len();
+        let mid_end2 = mid_start2 + common_middle.len();
+        let update2 = find_diffs(string1[mid_end1..].to_string(), string2[mid_end2..].to_string(), pre_len1 + mid_end1);
         return update1.into_iter().chain(update2).collect();
     }
 
     let mut updates = HashMap::new();
-    updates.insert(pre_len1, string2);
+    let mut diff = HashMap::new();
+    diff.insert(string1, string2);
+    updates.insert(pre_len1, diff);
     return updates
      
 }
@@ -93,19 +103,33 @@ fn find_common_middle(string1: String, string2: String) -> String {
 }
 
 fn find_common_start(string1: String, string2: String) -> String {
-    let remainder1 = string1.len() - 1;
-    let remainder2 = string2.len() - 1;
-    if string1[remainder1..] == string2[remainder2..] {
-        return format!("{}{}",
-            find_common_start(string1[..remainder1].to_string(), string2[..remainder2].to_string()), &string1[remainder1..])
-    }
+    if string1.len() > 0 && string2.len() > 0 {
+        let remainder1 = string1.len() - 1;
+        let remainder2 = string2.len() - 1;
+        if string1[remainder1..] == string2[remainder2..] {
+            return format!("{}{}",
+                find_common_start(string1[..remainder1].to_string(), string2[..remainder2].to_string()), &string1[remainder1..])
+        }
+    }    
     return String::new()
 }
 
 fn find_common_end(string1: String, string2: String) -> String {
-    if string1[..1] == string2[..1] {
-        return format!("{}{}",
-           &string1[..1], find_common_end(string1[1..].to_string(), string2[1..].to_string()))
+    if string1.len() > 0 && string2.len() > 0 {
+        if string1[..1] == string2[..1] {
+            return format!("{}{}",
+                &string1[..1], find_common_end(string1[1..].to_string(), string2[1..].to_string()))
+        }
     }
     return String::new()
 }
+
+// pub fn update(original: String, updates: HashMap<usize, String>, position: usize) -> String {
+
+//     if updates.contains_key(position) {
+//         let change = updates.get(position).unwrap()
+//         let change_len = change.len()
+//         return format!("{}{}",
+//             change, update(original)
+//     }
+// }
