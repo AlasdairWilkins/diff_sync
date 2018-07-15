@@ -54,9 +54,7 @@ fn find_diffs(string1: String, string2: String, pre_len1: usize) -> HashMap<usiz
 }
 
 fn remove_prefix(string1: String, string2: String) -> (String, String) {
-	println!("Strings to inspect: '{}' and '{}'", string1, string2);
     let (option1, option2) = (string1.find(" "), string2.find(" "));
-	println!("Results: {:?} and {:?}", option1, option2);
 	match (option1, option2) {
 		(None, None) => (),
         (None, Some(len)) => {
@@ -79,9 +77,7 @@ fn remove_prefix(string1: String, string2: String) -> (String, String) {
 }
 
 fn remove_suffix(string1: String, string2: String) -> (String, String) {
-	println!("Strings to inspect: '{}' and '{}'", string1, string2);
 	let (option1, option2) = (string1.rfind(" "), string2.rfind(" "));
-	println!("Results: {:?} and {:?}", option1, option2);
 	match (option1, option2) {
 		(None, None) => (),
 		(None, Some(len)) => {
@@ -109,17 +105,28 @@ fn find_common_middle(string1: String, string2: String) -> String {
         return common_middle
     }
     let midpoint = string1.len()/2;
-    let q2 = midpoint - midpoint/2;
-    let q3 = midpoint + midpoint/2;
-    let second_quarter = &string1[q2..midpoint].to_string();
-    let third_quarter = &string1[midpoint..q3].to_string();
-    if string2.contains(second_quarter) {
+    let (q2, q3) = (midpoint - midpoint/2, midpoint + midpoint/2);
+	let mut second_quarter = String::new();
+	let mut third_quarter = String::new();
+    let (option_q1, option_q2) = (string1[q2..midpoint].find(" "), string1[midpoint..q3].rfind(" "));
+	match (option_q1, option_q2) {
+		(None, None) => return common_middle,
+		(Some(position), None) => second_quarter = string1[position..position+q2].to_string(),
+		(None, Some(position)) => third_quarter = string1[midpoint-position..q3-position].to_string(),
+		(Some(position1), Some(position2)) => {
+			second_quarter = string1[position1..position1+q2].to_string();
+			third_quarter = string1[midpoint-position2..q3-position2].to_string();
+		}
+	}
+
+	if string2.contains(&second_quarter) {
         common_middle = second_quarter.to_string() 
-    } else if string2.contains(third_quarter) {
+    } else if string2.contains(&third_quarter) {
         common_middle = third_quarter.to_string()
     } else {
         return common_middle
     }
+
     let start1 = string1.find(&common_middle).unwrap();
     let start2 = string2.find(&common_middle).unwrap();
     let end1 = start1 + common_middle.len();
@@ -132,9 +139,7 @@ fn find_common_middle(string1: String, string2: String) -> String {
 }
 
 fn find_common_start(string1: String, string2: String) -> String {
-	println!("Strings to inspect: '{}' and '{}'", string1, string2);
 	let (option1, option2) = (string1.rfind(" "), string2.rfind(" "));
-	println!("Results: {:?} and {:?}", option1, option2);
 	match (option1, option2) {
 		(None, None) => (),
 		(None, Some(len)) => {
@@ -157,9 +162,7 @@ fn find_common_start(string1: String, string2: String) -> String {
 }
 
 fn find_common_end(string1: String, string2: String) -> String {
-	println!("Strings to inspect: '{}' and '{}'", string1, string2);
     let (option1, option2) = (string1.find(" "), string2.find(" "));
-	println!("Results: {:?} and {:?}", option1, option2);
 	match (option1, option2) {
 		(None, None) => (),
 		(None, Some(len)) => {
@@ -182,25 +185,28 @@ fn find_common_end(string1: String, string2: String) -> String {
 }
 
 pub fn update(original: String, updates: &HashMap<usize, HashMap<String, String>>, position: usize) -> String {
-    if original.len() > 0 {
-        if updates.contains_key(&position) {
-            let diff = updates.get(&position).unwrap();
-            let key = find_key(diff, &original, 1);
-            if key == "" {
-                return format!("{}{}", diff.get(&key).unwrap(), update(original[key.len()..].to_string(), updates, position + 1))
-            }
-            return format!("{}{}", diff.get(&key).unwrap(), update(original[key.len()..].to_string(), updates, position + key.len()))
+	println!("{}", &position);
+	if updates.contains_key(&position) {
+		let diff = updates.get(&position).unwrap();
+		let key = find_key(diff, &original, 1);
+		if key == "" {
+			println!("Original: {}, Change: {}", key, diff.get(&key).unwrap());
+            return format!("{}{}", diff.get(&key).unwrap(), update(original[key.len()..].to_string(), updates, position + 1))
         }
-        return format!("{}{}", original[..1].to_string(), update(original[1..].to_string(), updates, position + 1))
-    }
-    if original.len() == 0 {
-        if updates.contains_key(&position) {
-            let diff = updates.get(&position).unwrap();
-            let key = find_key(diff, &original, 1);
-            return diff.get(&key).unwrap().to_string()
-        }
-    }
-    return String::new()
+		println!("Original: {}, Change: {}", key, diff.get(&key).unwrap());
+		return format!("{}{}", diff.get(&key).unwrap(), update(original[key.len()..].to_string(), updates, position + key.len()));
+	}
+	if original.len() == 0 {
+    	return String::new()
+	}
+	if original[..1] == String::from(" ") {
+		return format!(" {}", update(original[1..].to_string(), updates, position + 1));
+	}
+	let next_space = original.find(" ");
+	match next_space {
+		None => return format!("{}{}", original, update(String::new(), updates, original.len())),
+		Some(len) => return format!("{}{}", original[..len].to_string(), update(original[len..].to_string(), updates, position + len))
+	}
 }
 
 fn find_key (diff: &HashMap<String, String>, original: &String, length: usize) -> String {
