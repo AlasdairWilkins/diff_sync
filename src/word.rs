@@ -28,9 +28,9 @@ pub fn compare(string1: &str, string2: &str) -> HashMap<usize, HashMap<String, S
         return updates
     }
 
-    return updates;
+    // return updates;
 
-    // return find_diffs(no_pre_suf1.to_string(), no_pre_suf2.to_string(), pre_len1);
+    return find_diffs(no_pre_suf1.to_string(), no_pre_suf2.to_string(), pre_len1);
 
 }
 
@@ -50,29 +50,14 @@ fn find_diffs(string1: String, string2: String, pre_len1: usize) -> HashMap<usiz
     let mut diff = HashMap::new();
     diff.insert(string1, string2);
     updates.insert(pre_len1, diff);
-    return updates
-     
+    return updates 
 }
 
-// fn find_word(string: &String) -> String {
-//     match string.find(" ") {
-//         None => return function!(string.to_string(),
-//         Some(len) => return string[..(len+1)].to_string()
-//     }
-// }
-
-// fn rfind_word(string: &String) -> String {
-//     match string.rfind(" ") {
-//         None => return string.to_string(),
-//         Some(len) => return string[len..].to_string()
-//     }
-// }
-
 fn remove_prefix(string1: String, string2: String) -> (String, String) {
-    println!("Strings to inspect: '{}' and '{}'", string1, string2);
-    let (word1, word2) = (string1.find(" "), string2.find(" "));
-	println!("{:?} and {:?}", word1, word2);
-	match (word1, word2) {
+	println!("Strings to inspect: '{}' and '{}'", string1, string2);
+    let (option1, option2) = (string1.find(" "), string2.find(" "));
+	println!("Results: {:?} and {:?}", option1, option2);
+	match (option1, option2) {
 		(None, None) => (),
         (None, Some(len)) => {
             if string1 == string2[..len] {
@@ -94,10 +79,10 @@ fn remove_prefix(string1: String, string2: String) -> (String, String) {
 }
 
 fn remove_suffix(string1: String, string2: String) -> (String, String) {
-    println!("Strings to inspect: '{}' and '{}'", string1, string2);
-	let (word1, word2) = (string1.rfind(" "), string2.rfind(" "));
-	println!("{:?} and {:?}", word1, word2);
-	match (word1, word2) {
+	println!("Strings to inspect: '{}' and '{}'", string1, string2);
+	let (option1, option2) = (string1.rfind(" "), string2.rfind(" "));
+	println!("Results: {:?} and {:?}", option1, option2);
+	match (option1, option2) {
 		(None, None) => (),
 		(None, Some(len)) => {
 			if string1 == string2[(len+1)..] {
@@ -147,24 +132,52 @@ fn find_common_middle(string1: String, string2: String) -> String {
 }
 
 fn find_common_start(string1: String, string2: String) -> String {
-    if string1.len() > 0 && string2.len() > 0 {
-        let remainder1 = string1.len() - 1;
-        let remainder2 = string2.len() - 1;
-        if string1[remainder1..] == string2[remainder2..] {
-            return format!("{}{}",
-                find_common_start(string1[..remainder1].to_string(), string2[..remainder2].to_string()), &string1[remainder1..])
-        }
-    }    
+	println!("Strings to inspect: '{}' and '{}'", string1, string2);
+	let (option1, option2) = (string1.rfind(" "), string2.rfind(" "));
+	println!("Results: {:?} and {:?}", option1, option2);
+	match (option1, option2) {
+		(None, None) => (),
+		(None, Some(len)) => {
+			if string1 == string2[len..] {
+				return string1
+			}
+		},
+		(Some(len), None) => {
+			if string1[len..] == string2 {
+				return string2
+			}
+		},
+		(Some(len1), Some(len2)) => {
+			if string1[len1..] == string2[len2..] {
+				return format!("{}{}", find_common_start(string1[..len1].to_string(), string2[..len2].to_string()), &string1[len1..])
+			}
+		}
+	}	  
     return String::new()
 }
 
 fn find_common_end(string1: String, string2: String) -> String {
-    if string1.len() > 0 && string2.len() > 0 {
-        if string1[..1] == string2[..1] {
-            return format!("{}{}",
-                &string1[..1], find_common_end(string1[1..].to_string(), string2[1..].to_string()))
-        }
-    }
+	println!("Strings to inspect: '{}' and '{}'", string1, string2);
+    let (option1, option2) = (string1.find(" "), string2.find(" "));
+	println!("Results: {:?} and {:?}", option1, option2);
+	match (option1, option2) {
+		(None, None) => (),
+		(None, Some(len)) => {
+			if string1 == string2[..len] {
+				return string1
+			}
+		},
+		(Some(len), None) => {
+			if string1[..len] == string2 {
+				return string2
+			}
+		},
+		(Some(len1), Some(len2)) => {
+			if string1[..len1] == string2[..len2] {
+				return format!("{}{}", &string1[..(len1+1)], find_common_end(string1[(len1+1)..].to_string(), string2[(len2+1)..].to_string()))
+			}
+		}
+	}
     return String::new()
 }
 
