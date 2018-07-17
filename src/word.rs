@@ -185,15 +185,12 @@ fn find_common_end(string1: String, string2: String) -> String {
 }
 
 pub fn update(original: String, updates: &HashMap<usize, HashMap<String, String>>, position: usize) -> String {
-	println!("{}", &position);
 	if updates.contains_key(&position) {
 		let diff = updates.get(&position).unwrap();
 		let key = find_key(diff, &original, 1);
 		if key == "" {
-			println!("Original: {}, Change: {}", key, diff.get(&key).unwrap());
             return format!("{}{}", diff.get(&key).unwrap(), update(original[key.len()..].to_string(), updates, position + 1))
         }
-		println!("Original: {}, Change: {}", key, diff.get(&key).unwrap());
 		return format!("{}{}", diff.get(&key).unwrap(), update(original[key.len()..].to_string(), updates, position + key.len()));
 	}
 	if original.len() == 0 {

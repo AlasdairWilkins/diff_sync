@@ -128,7 +128,7 @@ pub fn update(original: String, updates: &HashMap<usize, HashMap<String, String>
             let diff = updates.get(&position).unwrap();
             let key = find_key(diff, &original, 1);
             if key == "" {
-                return format!("{}{}", diff.get(&key).unwrap(), update(original[key.len()..].to_string(), updates, position + 1))
+                return format!("{}{}{}", diff.get(&key).unwrap(), original[..1].to_string(), update(original[1..].to_string(), updates, position+1))
             }
             return format!("{}{}", diff.get(&key).unwrap(), update(original[key.len()..].to_string(), updates, position + key.len()))
         }
