@@ -8,29 +8,31 @@ pub fn compare(string1: &str, string2: &str) -> HashMap<usize, HashMap<String, S
         return updates
     } 
 
-    let (no_pre1, no_pre2) = remove_prefix(string1.to_string(), string2.to_string());
+    let prefix = remove_prefix(string1.to_string(), string2.to_string());
 
-    let (no_pre_suf1, no_pre_suf2) = remove_suffix(no_pre1.to_string(), no_pre2.to_string());
+	println!("Prefix: {}", prefix);
 
-    let pre_len1 = string1.len() - no_pre1.len();
+    // let (no_pre_suf1, no_pre_suf2) = remove_suffix(no_pre1.to_string(), no_pre2.to_string());
 
-    if no_pre_suf1.len() == 0 {
-        let mut diff = HashMap::new();
-        diff.insert(String::new(), no_pre_suf2);
-        updates.insert(pre_len1, diff);
-        return updates
-    }
+    // let pre_len1 = string1.len() - no_pre1.len();
 
-    if no_pre_suf2.len() == 0 {
-        let mut diff = HashMap::new();
-        diff.insert(no_pre_suf1, String::new());
-        updates.insert(pre_len1, diff);
-        return updates
-    }
+    // if no_pre_suf1.len() == 0 {
+    //     let mut diff = HashMap::new();
+    //     diff.insert(String::new(), no_pre_suf2);
+    //     updates.insert(pre_len1, diff);
+    //     return updates
+    // }
 
-    // return updates;
+    // if no_pre_suf2.len() == 0 {
+    //     let mut diff = HashMap::new();
+    //     diff.insert(no_pre_suf1, String::new());
+    //     updates.insert(pre_len1, diff);
+    //     return updates
+    // }
 
-    return find_diffs(no_pre_suf1.to_string(), no_pre_suf2.to_string(), pre_len1);
+    return updates;
+
+    // return find_diffs(no_pre_suf1.to_string(), no_pre_suf2.to_string(), pre_len1);
 
 }
 
@@ -53,27 +55,45 @@ fn find_diffs(string1: String, string2: String, pre_len1: usize) -> HashMap<usiz
     return updates 
 }
 
-fn remove_prefix(string1: String, string2: String) -> (String, String) {
-    let (option1, option2) = (string1.find(" "), string2.find(" "));
+fn remove_prefix(string1: String, string2: String) -> (String) {
+
+	// println!("Under consideration: '{}', '{}'", string1, string2);
+	
+	let midpoint = string1.len() / 2;
+
+	let (option1, option2) = (string1[..midpoint].rfind(" "), string2[..midpoint].rfind(" "));
+
+	match (option1, option2) {
+		(None, None) => println!("None and none!"),
+		(None, Some(len)) => println!("None and some"),
+		(Some(len), None) => println!("Some and none"),
+		(Some(len1), Some(len2)) => {
+			if string1[..len1] == string2[..len2] {
+				println!("Made it here: '{}', '{}', {}, {}", string1[..len1].to_string(), string2[..len2].to_string(), len1, len2);
+				return format!("{}{}", string1[..len1+1].to_string(), remove_prefix(string1[len1+1..].to_string(), string2[len2+1..].to_string()))
+			}
+			return remove_prefix(string1[..midpoint].to_string(), string2[..midpoint].to_string())
+		}
+	}
+	println!("Made it here instead!");
+	return find_additional_prefix(string1, string2)
+}
+
+fn find_additional_prefix(string1: String, string2: String) -> (String) {
+
+	let (option1, option2) = (string1.find(" "), string2.find(" "));
 	match (option1, option2) {
 		(None, None) => (),
-        (None, Some(len)) => {
-            if string1 == string2[..len] {
-                return (string1[len..].to_string(), string2[len..].to_string())
-            }
-        },
-        (Some(len), None) => {
-            if string1[..len] == string1 {
-                return (string1[len..].to_string(), string2[len..].to_string());
-            }
-        },
+        (None, Some(len)) => (),
+        (Some(len), None) => (),
         (Some(len1), Some(len2)) => {
             if string1[..len1] == string2[..len2] {
-                return remove_prefix(string1[(len1+1)..].to_string(), string2[(len2+1)..].to_string())
+                return format!("{}{}", string1[..len1].to_string(), remove_prefix(string1[(len1+1)..].to_string(), string2[(len2+1)..].to_string()))
             }	
         }
     }
-	return (string1, string2)
+	return String::new()
+
 }
 
 fn remove_suffix(string1: String, string2: String) -> (String, String) {
