@@ -1,0 +1,7 @@
+# diff_sync
+
+This is a Rust implementation of the differential synchronization algorithm used in Google Docs to let multiple users edit the same document at once. It will eventually form part of a content management system, likely written in JavaScript. However, given the  complexity of repeatedly syncing documents across servers, I opted to write this part of the program in a more operant, memory-efficient language. 
+
+The program follows the steps outlined in Neil Fraser's [white paper on the diff sync algorithm](https://neil.fraser.name/writing/sync/). In the spirit of my time at the Recurse Center, I have written the algorithm as recursively as possible. It follows the optimization steps Fraser outlines. It first checks whether the two pieces of text being compared are the same. If not, it uses binary search to find the shared prefix and suffix for the string. Once it has found the first diffs on either end of the string, it recursively searches for common substrings that are at least half the length of the remaining string. That length proviso eliminates the possibility that the strings are coincidentally identical. 
+
+The algorithm then returns a vector pairing the position in the original string with the difference found there. A second algorithm then patches these differences onto the second string. The initial version of the algorithm worked on a character-by-character basis. The latest version looks word by word.
